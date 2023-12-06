@@ -81,7 +81,7 @@ routerUsers.post("/login", async (req, res) => {
             email: selectedUsers[0].email,
             id: selectedUsers[0].id
         },
-        "secret")
+        "CursoSantander")
     activeApiKeys.push(apiKey)
 
 
@@ -90,6 +90,10 @@ routerUsers.post("/login", async (req, res) => {
         id: selectedUsers[0].id,
         email: selectedUsers[0].email
     })
+})
+
+routerUsers.get("/checkLogin", async (req, res) => {
+    return res.status(200).json({ message: "OK" })
 })
 
 module.exports = routerUsers
