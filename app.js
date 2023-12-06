@@ -8,9 +8,7 @@ const app = express()
 
 app.use(express.json())
 
-app.use("/users", routerUsers)
-
-app.use(["/users/checklogin"], (req, res, next) => {
+app.use(["/users/checkLogin"], (req, res, next) => {
 
     console.log("Executing middleware")
 
@@ -25,6 +23,8 @@ app.use(["/users/checklogin"], (req, res, next) => {
     req.infoInApiKey = infoInApiKey;
     next()
 })
+
+app.use("/users", routerUsers)
 
 app.listen(port, () => {
     console.log("Active server listening on port " + port)
