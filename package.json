@@ -1,0 +1,11 @@
+{
+  "name": "present4u_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "author": "Alex",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
