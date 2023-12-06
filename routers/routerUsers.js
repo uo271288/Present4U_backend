@@ -92,6 +92,17 @@ routerUsers.post("/login", async (req, res) => {
     })
 })
 
+routerUsers.get("/disconnect", async (req, res) => {
+
+    const apiKeyIndex = activeApiKeys.indexOf(req.query.apiKey);
+    if (apiKeyIndex > -1) {
+        activeApiKeys.splice(apiKeyIndex, 1);
+        res.status(200).json({ removed: true })
+    } else {
+        return res.status(400).json({ error: "User not found" })
+    }
+})
+
 routerUsers.get("/checkLogin", async (req, res) => {
     return res.status(200).json({ message: "OK" })
 })
