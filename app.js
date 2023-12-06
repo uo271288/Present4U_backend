@@ -1,5 +1,8 @@
 const express = require('express')
 const routerUsers = require("./routers/routerUsers")
+const jwt = require("jsonwebtoken")
+const activeApiKeys = require("./activeApiKeys")
+
 const port = 8081
 const app = express()
 

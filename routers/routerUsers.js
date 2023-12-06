@@ -1,5 +1,8 @@
 const express = require('express')
 const database = require("../database")
+const activeApiKeys = require("../activeApiKeys")
+const jwt = require("jsonwebtoken")
+
 const routerUsers = express.Router()
 
 routerUsers.post("/", async (req, res) => {
@@ -8,6 +11,7 @@ routerUsers.post("/", async (req, res) => {
     let password = req.body.password
     let name = req.body.name
     let errors = []
+
     if (email == undefined) {
         errors.push("Email is required")
     }
@@ -40,6 +44,52 @@ routerUsers.post("/", async (req, res) => {
     }
 
     res.status(200).json({ inserted: insertedUser })
+})
+
+routerUsers.post("/login", async (req, res) => {
+
+    let email = req.body.email
+    let password = req.body.password
+    let errors = []
+
+    if (email == undefined) {
+        errors.push("Email is required")
+    }
+    if (password == undefined) {
+        errors.push("Password is required")
+    }
+    if (errors.length > 0) {
+        return res.status(400).json({ error: errors })
+    }
+
+    database.connect()
+
+    let selectedUsers = null
+    try {
+        selectedUsers = await database.query('SELECT id, email FROM users WHERE email = ? AND password = ?', [email, password])
+        database.disconnect()
+    } catch (e) {
+        return res.status(400).json({ error: e })
+    }
+
+    if (selectedUsers.length == 0) {
+        return res.status(401).json({ error: "Invalid email or password" })
+    }
+
+    let apiKey = jwt.sign(
+        {
+            email: selectedUsers[0].email,
+            id: selectedUsers[0].id
+        },
+        "secret")
+    activeApiKeys.push(apiKey)
+
+
+    res.json({
+        apiKey: apiKey,
+        id: selectedUsers[0].id,
+        email: selectedUsers[0].email
+    })
 })
 
 module.exports = routerUsers
