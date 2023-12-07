@@ -1,6 +1,5 @@
 const express = require('express')
 const database = require("../database")
-const jwt = require("jsonwebtoken")
 
 const routerPresents = express.Router()
 
@@ -10,7 +9,7 @@ routerPresents.post("/", async (req, res) => {
     let description = req.body.description
     let url = req.body.url
     let price = req.body.price
-    let apiKey = req.query.apiKey
+    let userId = req.infoApiKey.id
     let errors = []
 
     if (name == undefined) {
@@ -32,9 +31,8 @@ routerPresents.post("/", async (req, res) => {
     database.connect()
 
     let insertedUser = null
-    let infoInApiKey = jwt.verify(apiKey, "CursoSantander")
     try {
-        insertedUser = await database.query('INSERT INTO presents (userId,name,description,url,price) VALUES (?,?,?,?,?)', [infoInApiKey.id, name, description, url, price])
+        insertedUser = await database.query('INSERT INTO presents (userId,name,description,url,price) VALUES (?,?,?,?,?)', [userId, name, description, url, price])
         database.disconnect()
     } catch (e) {
         database.disconnect()
@@ -46,12 +44,13 @@ routerPresents.post("/", async (req, res) => {
 
 routerPresents.get("/", async (req, res) => {
 
+    let userId = req.infoApiKey.id
+
     database.connect()
 
     let presents = null
-    let infoInApiKey = jwt.verify(req.query.apiKey, "CursoSantander")
     try {
-        presents = await database.query('SELECT * FROM presents WHERE userId = ?', [infoInApiKey.id])
+        presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
         database.disconnect()
     } catch (e) {
         database.disconnect()
@@ -64,10 +63,10 @@ routerPresents.get("/", async (req, res) => {
 routerPresents.get("/:id", async (req, res) => {
 
     let presentId = req.params.id
+    let userId = req.infoApiKey.id
 
     database.connect()
 
-    let infoInApiKey = jwt.verify(req.query.apiKey, "CursoSantander")
     let present = null
     try {
         present = await database.query('SELECT * FROM presents WHERE id = ?', [presentId])
@@ -77,10 +76,37 @@ routerPresents.get("/:id", async (req, res) => {
         return res.status(400).json({ error: e })
     }
 
-    if (present[0].userId != infoInApiKey.id) {
+    if (present[0].userId != userId) {
         return res.status(400).json({ error: "This present is not yours" })
     }
     res.status(200).json({ present: present[0] })
+})
+
+routerPresents.delete("/:id", async (req, res) => {
+
+    let id = req.params.id
+    let idUser = req.infoApiKey.id
+
+    if (id == undefined) {
+        return res.status(400).json({ error: "No id param" })
+    }
+
+    let result = null
+
+    database.connect()
+    try {
+        result = await database.query("DELETE FROM presents WHERE id=? AND userId=?", [id, idUser])
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ errors: "Problems while deleting bid" })
+    }
+    database.disconnect()
+
+    if (result.affectedRows == 0) {
+        return res.status(400).json({ errors: "There is no present with this id or is not yours" })
+    }
+
+    res.status(200).json({ deleted: true })
 })
 
 module.exports = routerPresents

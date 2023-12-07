@@ -17,11 +17,11 @@ app.use(["/presents","/users/checkLogin"], (req, res, next) => {
     if (apiKey == undefined) {
         return res.status(401).json({ error: "No apiKey" })
     }
-    let infoInApiKey = jwt.verify(apiKey, "CursoSantander")
-    if (infoInApiKey == undefined || activeApiKeys.indexOf(apiKey) == -1) {
+    let infoApiKey = jwt.verify(apiKey, "CursoSantander")
+    if (infoApiKey == undefined || activeApiKeys.indexOf(apiKey) == -1) {
         return res.status(401).json({ error: "Invalid apiKey" })
     }
-    req.infoInApiKey = infoInApiKey
+    req.infoApiKey = infoApiKey
     next()
 })
 
