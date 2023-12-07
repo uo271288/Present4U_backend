@@ -48,4 +48,31 @@ routerFriends.get("/", async (req, res) => {
     res.status(200).json({ friends: friends })
 })
 
+routerFriends.delete("/:email", async (req, res) => {
+
+    let emailFriend = req.params.email
+    let emailUser = req.infoApiKey.email
+
+    if (emailFriend == undefined) {
+        return res.status(400).json({ error: "No email param" })
+    }
+
+    let result = null
+
+    database.connect()
+    try {
+        result = await database.query("DELETE FROM friends WHERE emailMainUser = ? AND emailFriend = ?", [emailUser, emailFriend])
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ errors: "Problems while deleting friend" })
+    }
+    database.disconnect()
+
+    if (result.affectedRows == 0) {
+        return res.status(400).json({ errors: "There is no friend with this id or is not yours" })
+    }
+
+    res.status(200).json({ deleted: true })
+})
+
 module.exports = routerFriends
