@@ -61,4 +61,26 @@ routerPresents.get("/", async (req, res) => {
     res.status(200).json({ presents: presents })
 })
 
+routerPresents.get("/:id", async (req, res) => {
+
+    let presentId = req.params.id
+
+    database.connect()
+
+    let infoInApiKey = jwt.verify(req.query.apiKey, "CursoSantander")
+    let present = null
+    try {
+        present = await database.query('SELECT * FROM presents WHERE id = ?', [presentId])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: e })
+    }
+
+    if (present[0].userId != infoInApiKey.id) {
+        return res.status(400).json({ error: "This present is not yours" })
+    }
+    res.status(200).json({ present: present[0] })
+})
+
 module.exports = routerPresents
