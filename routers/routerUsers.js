@@ -41,6 +41,7 @@ routerUsers.post("/", async (req, res) => {
         insertedUser = await database.query('INSERT INTO users (email,password,name) VALUES (?,?,?)', [email, password, name])
         database.disconnect()
     } catch (e) {
+        database.disconnect()
         return res.status(400).json({ error: e })
     }
 
@@ -70,6 +71,7 @@ routerUsers.post("/login", async (req, res) => {
         selectedUsers = await database.query('SELECT id, email FROM users WHERE email = ? AND password = ?', [email, password])
         database.disconnect()
     } catch (e) {
+        database.disconnect()
         return res.status(400).json({ error: e })
     }
 

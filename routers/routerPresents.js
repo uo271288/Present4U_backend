@@ -37,10 +37,28 @@ routerPresents.post("/", async (req, res) => {
         insertedUser = await database.query('INSERT INTO presents (userId,name,description,url,price) VALUES (?,?,?,?,?)', [infoInApiKey.id, name, description, url, price])
         database.disconnect()
     } catch (e) {
+        database.disconnect()
         return res.status(400).json({ error: e })
     }
 
     res.status(200).json({ inserted: insertedUser })
+})
+
+routerPresents.get("/", async (req, res) => {
+
+    database.connect()
+
+    let presents = null
+    let infoInApiKey = jwt.verify(req.query.apiKey, "CursoSantander")
+    try {
+        presents = await database.query('SELECT * FROM presents WHERE userId = ?', [infoInApiKey.id])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: e })
+    }
+
+    res.status(200).json({ presents: presents })
 })
 
 module.exports = routerPresents
