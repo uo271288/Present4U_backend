@@ -82,10 +82,14 @@ routerPresents.get("/:id", async (req, res) => {
     res.status(200).json({ present: present[0] })
 })
 
-routerPresents.delete("/:id", async (req, res) => {
+routerPresents.put("/:id", async (req, res) => {
 
+    let name = req.body.name
+    let description = req.body.description
+    let url = req.body.url
+    let price = req.body.price
     let id = req.params.id
-    let idUser = req.infoApiKey.id
+    let userId = req.infoApiKey.id
 
     if (id == undefined) {
         return res.status(400).json({ error: "No id param" })
@@ -95,10 +99,37 @@ routerPresents.delete("/:id", async (req, res) => {
 
     database.connect()
     try {
-        result = await database.query("DELETE FROM presents WHERE id=? AND userId=?", [id, idUser])
+        result = await database.query("UPDATE presents SET name = ?, description = ?, url = ?, price = ? WHERE id = ? AND userId = ?", [name, description, url, price, id, userId])
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ errors: "Problems while deleting bid" })
+        return res.status(400).json({ errors: "Problems while updating present" })
+    }
+    database.disconnect()
+
+    if (result.affectedRows == 0) {
+        return res.status(400).json({ errors: "There is no present with this id or is not yours" })
+    }
+
+    res.status(200).json({ updated: true })
+})
+
+routerPresents.delete("/:id", async (req, res) => {
+
+    let id = req.params.id
+    let userId = req.infoApiKey.id
+
+    if (id == undefined) {
+        return res.status(400).json({ error: "No id param" })
+    }
+
+    let result = null
+
+    database.connect()
+    try {
+        result = await database.query("DELETE FROM presents WHERE id=? AND userId=?", [id, userId])
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ errors: "Problems while deleting present" })
     }
     database.disconnect()
 
