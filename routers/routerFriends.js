@@ -30,4 +30,22 @@ routerFriends.post("/", async (req, res) => {
     res.status(200).json({ inserted: insertedFriend })
 })
 
+routerFriends.get("/", async (req, res) => {
+
+    let emailUser = req.infoApiKey.email
+
+    database.connect()
+
+    let friends = null
+    try {
+        friends = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ?', [emailUser])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: e })
+    }
+
+    res.status(200).json({ friends: friends })
+})
+
 module.exports = routerFriends
