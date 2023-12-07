@@ -39,6 +39,7 @@ routerUsers.post("/", async (req, res) => {
             return res.status(400).json({ error: "There is already a user with this email" })
         }
         insertedUser = await database.query('INSERT INTO users (email,password,name) VALUES (?,?,?)', [email, password, name])
+        database.disconnect()
     } catch (e) {
         return res.status(400).json({ error: e })
     }

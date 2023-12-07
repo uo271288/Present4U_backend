@@ -1,5 +1,6 @@
 const express = require('express')
 const routerUsers = require("./routers/routerUsers")
+const routerPresents = require("./routers/routerPresents")
 const jwt = require("jsonwebtoken")
 const activeApiKeys = require("./activeApiKeys")
 
@@ -8,23 +9,24 @@ const app = express()
 
 app.use(express.json())
 
-app.use(["/users/checkLogin"], (req, res, next) => {
+app.use(["/presents","/users/checkLogin"], (req, res, next) => {
 
     console.log("Executing middleware")
 
     let apiKey = req.query.apiKey
     if (apiKey == undefined) {
-        return res.status(401).json({ error: "No apiKey" });
+        return res.status(401).json({ error: "No apiKey" })
     }
-    let infoInApiKey = jwt.verify(apiKey, "CursoSantander");
+    let infoInApiKey = jwt.verify(apiKey, "CursoSantander")
     if (infoInApiKey == undefined || activeApiKeys.indexOf(apiKey) == -1) {
-        return res.status(401).json({ error: "Invalid apiKey" });
+        return res.status(401).json({ error: "Invalid apiKey" })
     }
-    req.infoInApiKey = infoInApiKey;
+    req.infoInApiKey = infoInApiKey
     next()
 })
 
 app.use("/users", routerUsers)
+app.use("/presents", routerPresents)
 
 app.listen(port, () => {
     console.log("Active server listening on port " + port)
