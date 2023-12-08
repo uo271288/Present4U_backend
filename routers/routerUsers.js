@@ -7,9 +7,7 @@ const routerUsers = express.Router()
 
 routerUsers.post("/", async (req, res) => {
 
-    let email = req.body.email
-    let password = req.body.password
-    let name = req.body.name
+    let { name, email, password } = req.body
     let errors = []
 
     if (email == undefined) {
@@ -97,9 +95,9 @@ routerUsers.post("/login", async (req, res) => {
 
 routerUsers.get("/disconnect", async (req, res) => {
 
-    const apiKeyIndex = activeApiKeys.indexOf(req.query.apiKey);
+    let apiKeyIndex = activeApiKeys.indexOf(req.query.apiKey)
     if (apiKeyIndex > -1) {
-        activeApiKeys.splice(apiKeyIndex, 1);
+        activeApiKeys.splice(apiKeyIndex, 1)
         res.status(200).json({ removed: true })
     } else {
         return res.status(400).json({ error: "User not found" })

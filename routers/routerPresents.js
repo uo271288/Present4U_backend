@@ -5,10 +5,7 @@ const routerPresents = express.Router()
 
 routerPresents.post("/", async (req, res) => {
 
-    let name = req.body.name
-    let description = req.body.description
-    let url = req.body.url
-    let price = req.body.price
+    let { name, description, url, price } = req.body
     let userId = req.infoApiKey.id
     let errors = []
 
@@ -95,31 +92,62 @@ routerPresents.get("/:id", async (req, res) => {
 
 routerPresents.put("/:id", async (req, res) => {
 
-    let name = req.body.name
-    let description = req.body.description
-    let url = req.body.url
-    let price = req.body.price
+    let { name, description, url, price } = req.body
     let id = req.params.id
     let userId = req.infoApiKey.id
+    let userEmail = req.infoApiKey.email
+
+    let updateParams = []
+    let updateValues = []
+
+    if (name != undefined) {
+        updateParams.push("name = ?")
+        updateValues.push(name)
+    }
+    if (description != undefined) {
+        updateParams.push("description = ?")
+        updateValues.push(description)
+    }
+    if (url != undefined) {
+        updateParams.push("url = ?")
+        updateValues.push(url)
+    }
+    if (price != undefined) {
+        updateParams.push("price = ?")
+        updateValues.push(price)
+    }
+    updateValues.push(id)
 
     if (id == undefined) {
         return res.status(400).json({ error: "No id param" })
     }
 
-    let result = null
-
     database.connect()
     try {
-        result = await database.query("UPDATE presents SET name = ?, description = ?, url = ?, price = ? WHERE id = ? AND userId = ?", [name, description, url, price, id, userId])
+        let myPresent = await database.query("SELECT * FROM presents WHERE id = ? AND userId = ?", [id, userId])
+
+        if (myPresent.length == 0) {
+            let friend = await database.query('SELECT friends.emailMainUser FROM friends JOIN users ON users.email = friends.emailMainUser JOIN presents ON presents.userId = users.id WHERE friends.emailFriend = ? AND presents.id = ?', [userEmail, id])
+            if (friend.length == 0) {
+                database.disconnect()
+                return res.status(400).json({ error: "There is not a present with this id or you are not on the present owner's friends list" })
+            }
+            let chosen = await database.query("SELECT chosenBy FROM presents WHERE id = ?", [id, userId])
+
+            if (chosen[0].chosenBy != null) {
+                database.disconnect()
+                return res.status(400).json({ error: "This present is already chosen" })
+            }
+
+            await database.query("UPDATE presents SET chosenBy = ? WHERE id = ?", [userEmail, id])
+        } else {
+            await database.query("UPDATE presents SET " + updateParams.join(", ") + " WHERE id = ?", updateValues)
+        }
     } catch (e) {
         database.disconnect()
         return res.status(400).json({ errors: "Problems while updating present" })
     }
     database.disconnect()
-
-    if (result.affectedRows == 0) {
-        return res.status(400).json({ errors: "There is no present with this id or is not yours" })
-    }
 
     res.status(200).json({ updated: true })
 })
