@@ -43,14 +43,25 @@ routerPresents.post("/", async (req, res) => {
 })
 
 routerPresents.get("/", async (req, res) => {
-
+    let friendEmail = req.query.userEmail
     let userId = req.infoApiKey.id
+    let userEmail = req.infoApiKey.email
 
     database.connect()
 
     let presents = null
     try {
-        presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
+        if (friendEmail == undefined) {
+            presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
+        } else {
+            let friend = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ? AND emailFriend = ?', [friendEmail, userEmail])
+            if (friend.length > 0) {
+                presents = await database.query('SELECT presents.* FROM presents JOIN users ON presents.userId = users.id WHERE users.email = ?', [friendEmail])
+            } else {
+                database.disconnect()
+                return res.status(400).json({ error: "You are not on " + friendEmail + "'s friends list" })
+            }
+        }
         database.disconnect()
     } catch (e) {
         database.disconnect()
