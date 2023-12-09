@@ -8,6 +8,9 @@ const activeApiKeys = require("./activeApiKeys")
 const port = 8081
 const app = express()
 
+var cors = require('cors')
+app.use(cors())
+
 app.use(express.json())
 
 app.use(["/presents", "/friends", "/users/checkLogin"], (req, res, next) => {
