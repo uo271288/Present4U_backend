@@ -9,7 +9,7 @@ routerFriends.post("/", async (req, res) => {
     let emailUser = req.infoApiKey.email
     let errors = []
 
-    if (emailFriend == undefined) {
+    if (emailFriend === undefined || emailFriend.trim().length === 0) {
         errors.push("Friend's email is required")
     }
     if (errors.length > 0) {
@@ -53,7 +53,7 @@ routerFriends.delete("/:email", async (req, res) => {
     let emailFriend = req.params.email
     let emailUser = req.infoApiKey.email
 
-    if (emailFriend == undefined) {
+    if (emailFriend === undefined || emailFriend.trim().length === 0) {
         return res.status(400).json({ error: "No email param" })
     }
 
@@ -68,7 +68,7 @@ routerFriends.delete("/:email", async (req, res) => {
     }
     database.disconnect()
 
-    if (result.affectedRows == 0) {
+    if (result.affectedRows === 0) {
         return res.status(400).json({ errors: "There is no friend with this id or is not yours" })
     }
 

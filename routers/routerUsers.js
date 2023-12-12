@@ -10,13 +10,13 @@ routerUsers.post("/", async (req, res) => {
     let { name, email, password } = req.body
     let errors = []
 
-    if (email == undefined) {
+    if (email === undefined || email.trim().length === 0) {
         errors.push("Email is required")
     }
-    if (password == undefined) {
+    if (password === undefined || password.trim().length === 0) {
         errors.push("Password is required")
     }
-    if (name == undefined) {
+    if (name === undefined || name.trim().length === 0) {
         errors.push("Name is required")
     }
     if (password?.length < 5) {
@@ -52,10 +52,10 @@ routerUsers.post("/login", async (req, res) => {
     let password = req.body.password
     let errors = []
 
-    if (email == undefined) {
+    if (email === undefined) {
         errors.push("Email is required")
     }
-    if (password == undefined) {
+    if (password === undefined) {
         errors.push("Password is required")
     }
     if (errors.length > 0) {
@@ -73,7 +73,7 @@ routerUsers.post("/login", async (req, res) => {
         return res.status(400).json({ error: e })
     }
 
-    if (selectedUsers.length == 0) {
+    if (selectedUsers.length === 0) {
         return res.status(401).json({ error: "Invalid email or password" })
     }
 

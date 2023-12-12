@@ -9,16 +9,16 @@ routerPresents.post("/", async (req, res) => {
     let userId = req.infoApiKey.id
     let errors = []
 
-    if (name == undefined) {
+    if (name === undefined || name.trim().length === 0) {
         errors.push("Name is required")
     }
-    if (description == undefined) {
+    if (description === undefined || description.trim().length === 0) {
         errors.push("Description is required")
     }
-    if (url == undefined) {
+    if (url === undefined || url.trim().length === 0) {
         errors.push("URL is required")
     }
-    if (price == undefined) {
+    if (price === undefined || price.trim().length === 0 || parseFloat(price) < 0) {
         errors.push("Price is required")
     }
     if (errors.length > 0) {
@@ -48,7 +48,7 @@ routerPresents.get("/", async (req, res) => {
 
     let presents = null
     try {
-        if (friendEmail == undefined) {
+        if (friendEmail === undefined) {
             presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
         } else {
             let friend = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ? AND emailFriend = ?', [friendEmail, userEmail])
@@ -100,25 +100,25 @@ routerPresents.put("/:id", async (req, res) => {
     let updateParams = []
     let updateValues = []
 
-    if (name != undefined) {
+    if (name !== undefined && name.trim().length !== 0) {
         updateParams.push("name = ?")
         updateValues.push(name)
     }
-    if (description != undefined) {
+    if (description !== undefined && description.trim().length !== 0) {
         updateParams.push("description = ?")
         updateValues.push(description)
     }
-    if (url != undefined) {
+    if (url !== undefined && url.trim().length !== 0) {
         updateParams.push("url = ?")
         updateValues.push(url)
     }
-    if (price != undefined) {
+    if (price !== undefined && price.trim().length !== 0 && parseFloat(price) >= 0) {
         updateParams.push("price = ?")
         updateValues.push(price)
     }
     updateValues.push(id)
 
-    if (id == undefined) {
+    if (id === undefined) {
         return res.status(400).json({ error: "No id param" })
     }
 
@@ -126,9 +126,9 @@ routerPresents.put("/:id", async (req, res) => {
     try {
         let myPresent = await database.query("SELECT * FROM presents WHERE id = ? AND userId = ?", [id, userId])
 
-        if (myPresent.length == 0) {
+        if (myPresent.length === 0) {
             let friend = await database.query('SELECT friends.emailMainUser FROM friends JOIN users ON users.email = friends.emailMainUser JOIN presents ON presents.userId = users.id WHERE friends.emailFriend = ? AND presents.id = ?', [userEmail, id])
-            if (friend.length == 0) {
+            if (friend.length === 0) {
                 database.disconnect()
                 return res.status(400).json({ error: "There is not a present with this id or you are not on the present owner's friends list" })
             }
@@ -157,7 +157,7 @@ routerPresents.delete("/:id", async (req, res) => {
     let id = req.params.id
     let userId = req.infoApiKey.id
 
-    if (id == undefined) {
+    if (id === undefined) {
         return res.status(400).json({ error: "No id param" })
     }
 
@@ -172,7 +172,7 @@ routerPresents.delete("/:id", async (req, res) => {
     }
     database.disconnect()
 
-    if (result.affectedRows == 0) {
+    if (result.affectedRows === 0) {
         return res.status(400).json({ errors: "There is no present with this id or is not yours" })
     }
 
