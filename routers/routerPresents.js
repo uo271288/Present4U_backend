@@ -65,7 +65,7 @@ routerPresents.get("/", async (req, res) => {
         return res.status(400).json({ error: e })
     }
 
-    res.status(200).json({ presents: presents })
+    res.status(200).json(presents)
 })
 
 routerPresents.get("/:id", async (req, res) => {
