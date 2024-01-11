@@ -45,7 +45,7 @@ routerFriends.get("/", async (req, res) => {
         return res.status(400).json({ error: e })
     }
 
-    res.status(200).json({ friends: friends })
+    res.status(200).json(friends)
 })
 
 routerFriends.delete("/:email", async (req, res) => {
