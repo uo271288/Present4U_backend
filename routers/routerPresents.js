@@ -84,10 +84,14 @@ routerPresents.get("/:id", async (req, res) => {
         return res.status(400).json({ error: e })
     }
 
+    if (present.length <= 0) {
+        return res.status(400).json({ error: "No present found" })
+    }
+
     if (present[0].userId != userId) {
         return res.status(400).json({ error: "This present is not yours" })
     }
-    res.status(200).json({ present: present[0] })
+    res.status(200).json(present[0])
 })
 
 routerPresents.put("/:id", async (req, res) => {
