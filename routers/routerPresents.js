@@ -18,8 +18,11 @@ routerPresents.post("/", async (req, res) => {
     if (url === undefined || url.trim().length === 0) {
         errors.push("URL is required")
     }
-    if (price === undefined || price.trim().length === 0 || parseFloat(price) < 0) {
+    if (price === undefined || price.trim().length === 0) {
         errors.push("Price is required")
+    }
+    if (parseFloat(price) < 0) {
+        errors.push("Price cannot be negative")
     }
     if (errors.length > 0) {
         return res.status(400).json({ error: errors })
