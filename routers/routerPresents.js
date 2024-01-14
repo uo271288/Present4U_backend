@@ -36,7 +36,7 @@ routerPresents.post("/", async (req, res) => {
         database.disconnect()
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ error: e })
+        return res.status(400).json({ error: "Internal server error" })
     }
 
     res.status(200).json({ inserted: insertedUser })
@@ -65,7 +65,7 @@ routerPresents.get("/", async (req, res) => {
         database.disconnect()
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ error: e })
+        return res.status(400).json({ error: "Internal server error" })
     }
 
     res.status(200).json(presents)
@@ -84,7 +84,7 @@ routerPresents.get("/:id", async (req, res) => {
         database.disconnect()
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ error: e })
+        return res.status(400).json({ error: "Internal server error" })
     }
 
     if (present.length <= 0) {
@@ -119,7 +119,7 @@ routerPresents.put("/:id", async (req, res) => {
         updateParams.push("url = ?")
         updateValues.push(url)
     }
-    if (price !== undefined && price.trim().length !== 0 && parseFloat(price) >= 0) {
+    if (price !== undefined && (price + '').trim().length !== 0 && parseFloat(price) >= 0) {
         updateParams.push("price = ?")
         updateValues.push(price)
     }

@@ -24,7 +24,7 @@ routerFriends.post("/", async (req, res) => {
         database.disconnect()
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ error: e })
+        return res.status(400).json({ error: "Internal server error" })
     }
 
     res.status(200).json({ inserted: insertedFriend })
@@ -42,7 +42,7 @@ routerFriends.get("/", async (req, res) => {
         database.disconnect()
     } catch (e) {
         database.disconnect()
-        return res.status(400).json({ error: e })
+        return res.status(400).json({ error: "Internal server error" })
     }
 
     res.status(200).json(friends)
