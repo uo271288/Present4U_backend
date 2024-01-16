@@ -2,6 +2,7 @@ const express = require('express')
 const routerUsers = require("./routers/routerUsers")
 const routerPresents = require("./routers/routerPresents")
 const routerFriends = require('./routers/routerFriends')
+const routerLists = require('./routers/routerLists')
 const jwt = require("jsonwebtoken")
 const activeApiKeys = require("./activeApiKeys")
 
@@ -13,7 +14,7 @@ app.use(cors())
 
 app.use(express.json())
 
-app.use(["/presents", "/friends", "/users/checkLogin"], (req, res, next) => {
+app.use(["/presents", "/friends", "/users/checkLogin", "/lists"], (req, res, next) => {
 
     console.log("Executing middleware")
 
@@ -32,6 +33,7 @@ app.use(["/presents", "/friends", "/users/checkLogin"], (req, res, next) => {
 app.use("/users", routerUsers)
 app.use("/presents", routerPresents)
 app.use("/friends", routerFriends)
+app.use("/lists", routerLists)
 
 app.listen(port, () => {
     console.log("Active server listening on port " + port)
