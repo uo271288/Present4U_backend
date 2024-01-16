@@ -13,7 +13,7 @@ routerFriends.post("/", async (req, res) => {
     if (emailFriend === undefined || emailFriend.trim().length === 0) {
         errors.push("Friend's email is required")
     }
-    if (idList === undefined) {
+    if (idList === undefined || (idList + '').trim().length === 0) {
         errors.push("List id is required")
     }
     if (errors.length > 0) {
@@ -39,7 +39,7 @@ routerFriends.get("/:idList", async (req, res) => {
     let idList = req.params.idList
     let emailUser = req.infoApiKey.email
 
-    if (idList === undefined || idList.trim().length === 0) {
+    if (idList === undefined || (idList + '').trim().length === 0) {
         return res.status(400).json({ error: "No idList param" })
     }
 

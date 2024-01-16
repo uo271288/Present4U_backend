@@ -5,10 +5,13 @@ const routerPresents = express.Router()
 
 routerPresents.post("/", async (req, res) => {
 
-    let { name, description, url, price } = req.body
+    let { name, listId, description, url, price } = req.body
     let userId = req.infoApiKey.id
     let errors = []
 
+    if (listId === undefined || (listId + '').trim().length === 0) {
+        errors.push("List id is required")
+    }
     if (name === undefined || name.trim().length === 0) {
         errors.push("Name is required")
     }
@@ -32,7 +35,7 @@ routerPresents.post("/", async (req, res) => {
 
     let insertedUser = null
     try {
-        insertedUser = await database.query('INSERT INTO presents (userId,name,description,url,price) VALUES (?,?,?,?,?)', [userId, name, description, url, price])
+        insertedUser = await database.query('INSERT INTO presents (userId,listId,name,description,url,price) VALUES (?,?,?,?,?,?)', [userId, listId, name, description, url, price])
         database.disconnect()
     } catch (e) {
         database.disconnect()
@@ -44,6 +47,7 @@ routerPresents.post("/", async (req, res) => {
 
 routerPresents.get("/", async (req, res) => {
     let friendEmail = req.query.userEmail
+    let listId = req.query.listId
     let userId = req.infoApiKey.id
     let userEmail = req.infoApiKey.email
 
@@ -51,16 +55,16 @@ routerPresents.get("/", async (req, res) => {
 
     let presents = null
     try {
-        if (friendEmail === undefined) {
-            presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
-        } else {
-            let friend = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ? AND emailFriend = ?', [friendEmail, userEmail])
+        if (friendEmail !== undefined && listId !== undefined) {
+            let friend = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ? AND emailFriend = ? AND listId = ?', [friendEmail, userEmail, listId])
             if (friend.length > 0) {
-                presents = await database.query('SELECT presents.* FROM presents JOIN users ON presents.userId = users.id WHERE users.email = ?', [friendEmail])
+                presents = await database.query('SELECT presents.* FROM presents JOIN users ON presents.userId = users.id WHERE users.email = ? AND listId = ?', [friendEmail, listId])
             } else {
                 database.disconnect()
-                return res.status(400).json({ error: "You are not on " + friendEmail + "'s friends list" })
+                return res.status(400).json({ error: "You're not on " + friendEmail + "'s friends list" })
             }
+        } else {
+            presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
         }
         database.disconnect()
     } catch (e) {
