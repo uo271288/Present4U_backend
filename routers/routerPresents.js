@@ -83,7 +83,7 @@ routerPresents.get("/chosenByMe", async (req, res) => {
 
     let presents = null
     try {
-        presents = await database.query('SELECT * FROM presents WHERE chosenBy = ?', [email])
+        presents = await database.query('SELECT presents.*, lists.name as listName FROM presents JOIN lists ON lists.id = presents.listId WHERE presents.chosenBy = ?', [email])
         database.disconnect()
     } catch (e) {
         database.disconnect()
