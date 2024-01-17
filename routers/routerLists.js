@@ -30,6 +30,27 @@ routerLists.post("/", async (req, res) => {
     res.status(200).json({ inserted: newList })
 })
 
+routerLists.get("/", async (req, res) => {
+
+    let userId = req.infoApiKey.id
+
+    database.connect()
+    let lists = null
+    try {
+        lists = await database.query('SELECT * FROM lists WHERE userId = ?', [userId])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: "Internal server error" })
+    }
+
+    if (lists.length == 0) {
+        return res.status(400).json({ error: "No lists found" })
+    }
+
+    res.status(200).json(lists)
+})
+
 routerLists.get("/name/:name", async (req, res) => {
 
     let userId = req.infoApiKey.id
