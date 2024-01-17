@@ -47,7 +47,7 @@ routerPresents.post("/", async (req, res) => {
 
 routerPresents.get("/", async (req, res) => {
     let friendEmail = req.query.userEmail
-    let listId = req.query.listId
+    let listName = req.query.listName
     let userId = req.infoApiKey.id
     let userEmail = req.infoApiKey.email
 
@@ -55,21 +55,43 @@ routerPresents.get("/", async (req, res) => {
 
     let presents = null
     try {
-        if (friendEmail !== undefined && listId !== undefined) {
-            let friend = await database.query('SELECT emailFriend FROM friends WHERE emailMainUser = ? AND emailFriend = ? AND listId = ?', [friendEmail, userEmail, listId])
+        if (friendEmail !== undefined && listName !== undefined) {
+            let friend = await database.query('SELECT emailFriend, lists.name as listName FROM friends JOIN lists ON lists.id = friends.listId WHERE emailMainUser = ? AND emailFriend = ? AND lists.name = ?', [friendEmail, userEmail, listName])
             if (friend.length > 0) {
-                presents = await database.query('SELECT presents.* FROM presents JOIN users ON presents.userId = users.id WHERE users.email = ? AND listId = ?', [friendEmail, listId])
+                presents = await database.query('SELECT presents.*, lists.name as listName FROM presents JOIN users ON presents.userId = users.id JOIN lists ON lists.id = presents.listId WHERE users.email = ? AND lists.name = ?', [friendEmail, listName])
             } else {
                 database.disconnect()
                 return res.status(400).json({ error: "You're not on " + friendEmail + "'s friends list" })
             }
         } else {
-            presents = await database.query('SELECT * FROM presents WHERE userId = ?', [userId])
+            presents = await database.query('SELECT presents.*, lists.name AS listName FROM presents JOIN lists ON lists.id = presents.listId WHERE presents.userId = ?', [userId])
         }
         database.disconnect()
     } catch (e) {
         database.disconnect()
         return res.status(400).json({ error: "Internal server error" })
+    }
+
+    res.status(200).json(presents)
+})
+
+routerPresents.get("/chosenByMe", async (req, res) => {
+
+    let email = req.infoApiKey.email
+
+    database.connect()
+
+    let presents = null
+    try {
+        presents = await database.query('SELECT * FROM presents WHERE chosenBy = ?', [email])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: "Internal server error" })
+    }
+
+    if (presents.length <= 0) {
+        return res.status(400).json({ error: "You haven't chosen any presents" })
     }
 
     res.status(200).json(presents)
@@ -84,7 +106,7 @@ routerPresents.get("/:id", async (req, res) => {
 
     let present = null
     try {
-        present = await database.query('SELECT * FROM presents WHERE id = ?', [presentId])
+        present = await database.query('SELECT presents.*, lists.name AS listName FROM presents JOIN lists ON lists.id = presents.listId WHERE presents.id = ?', [presentId])
         database.disconnect()
     } catch (e) {
         database.disconnect()
@@ -138,7 +160,7 @@ routerPresents.put("/:id", async (req, res) => {
         let myPresent = await database.query("SELECT * FROM presents WHERE id = ? AND userId = ?", [id, userId])
 
         if (myPresent.length === 0) {
-            let friend = await database.query('SELECT friends.emailMainUser FROM friends JOIN users ON users.email = friends.emailMainUser JOIN presents ON presents.userId = users.id WHERE friends.emailFriend = ? AND presents.id = ?', [userEmail, id])
+            let friend = await database.query('SELECT friends.emailMainUser FROM friends JOIN users ON users.email = friends.emailMainUser JOIN presents ON presents.userId = users.id AND presents.listId = friends.listId WHERE friends.emailFriend = ? AND presents.id = ?', [userEmail, id])
             if (friend.length === 0) {
                 database.disconnect()
                 return res.status(400).json({ error: "There is not a present with this id or you are not on the present owner's friends list" })

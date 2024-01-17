@@ -34,6 +34,28 @@ routerFriends.post("/", async (req, res) => {
     res.status(200).json({ inserted: insertedFriend })
 })
 
+routerFriends.get("/", async (req, res) => {
+
+    let emailUser = req.infoApiKey.email
+
+    database.connect()
+
+    let friends = null
+    try {
+        friends = await database.query('SELECT friends.emailFriend, lists.name AS listName, lists.id AS listId FROM friends JOIN lists ON lists.id = friends.listId WHERE friends.emailMainUser = ?', [emailUser])
+        database.disconnect()
+    } catch (e) {
+        database.disconnect()
+        return res.status(400).json({ error: "Internal server error" })
+    }
+
+    if (friends.length == 0) {
+        return res.status(400).json({ error: "No friends found" })
+    }
+
+    res.status(200).json(friends)
+})
+
 routerFriends.get("/:idList", async (req, res) => {
 
     let idList = req.params.idList
@@ -56,28 +78,6 @@ routerFriends.get("/:idList", async (req, res) => {
 
     if (friends.length == 0) {
         return res.status(400).json({ error: "No friends found for this list" })
-    }
-
-    res.status(200).json(friends)
-})
-
-routerFriends.get("/", async (req, res) => {
-
-    let emailUser = req.infoApiKey.email
-
-    database.connect()
-
-    let friends = null
-    try {
-        friends = await database.query('SELECT DISTINCT emailFriend FROM friends WHERE emailMainUser = ?', [emailUser])
-        database.disconnect()
-    } catch (e) {
-        database.disconnect()
-        return res.status(400).json({ error: "Internal server error" })
-    }
-
-    if (friends.length == 0) {
-        return res.status(400).json({ error: "No friends found" })
     }
 
     res.status(200).json(friends)
